@@ -1,0 +1,22 @@
+.cart-item {
+  padding: 1rem;
+  border-bottom: 1px solid #c6c6c6;
+  border-radius: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+
+  img {
+    width: 5rem;
+  }
+
+  .description {
+    width: 30%;
+  }
+
+  .amount {
+    font-size: 1.2rem;
+    // background-color: #6638ef;
+  }
+}

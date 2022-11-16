@@ -1,0 +1,34 @@
+nav {
+  background-color: #dfcf19;
+  padding: 1.5rem 2rem;
+  border: 2px solid rgb(38, 38, 38);
+  border-radius: 8px 8px 0 0;
+  position: sticky;
+  top: 0;
+  .center {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  h3 {
+  }
+
+  .nav-container {
+    display: block;
+    position: relative;
+
+    .amount-container {
+      position: absolute;
+      top: -0.85rem;
+      right: 1.5rem;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 50%;
+      background-color: #5c1fe9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+  }
+}

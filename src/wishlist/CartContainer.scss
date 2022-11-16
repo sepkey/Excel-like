@@ -1,0 +1,35 @@
+.cart {
+  width: 60%;
+  max-width: 60rem;
+  margin: 0 auto;
+  header {
+    padding: 2rem;
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    // gap: 1rem;
+  }
+
+  footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .cart-total {
+    }
+    .clear-btn {
+      all: unset;
+      color: #fff;
+      text-align: center;
+      border-radius: 2px;
+      padding: 0.5rem;
+      font-size: 2rem;
+      background-color: #5c1fe9;
+      width: 60%;
+      &:hover {
+        background-color: #6638ef;
+      }
+    }
+  }
+}
