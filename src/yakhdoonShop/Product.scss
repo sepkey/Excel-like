@@ -1,0 +1,36 @@
+.product {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  padding: 2rem;
+  width: 100%;
+  max-height: 40rem;
+  min-width: 10rem;
+  background-color: #fff;
+  z-index: 1;
+  box-shadow: 0 1px 6px 2px rgba(133, 132, 132, 0.25);
+  border-radius: 4px;
+
+  .product__info {
+    align-self: stretch;
+    font-size: 1rem;
+  }
+  img {
+    max-width: 20rem;
+    width: 100%;
+    object-fit: contain;
+  }
+  button {
+    background-color: #fff;
+    border: 1.5px solid #f6cdbc;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-family: "Vazir";
+    transition: all 0.2s ease-in;
+  }
+  button:hover {
+    background-color: #f6cdbc;
+  }
+}

@@ -1,0 +1,78 @@
+.header {
+  height: 6rem;
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(180deg, #f6cdbc 0%, #baddf2 5%);
+  background: -moz-linear-gradient(180deg, #f6cdbc 0%, #baddf2 5%);
+  .header__logo {
+    display: flex;
+    align-items: center;
+
+    .header__logoImg {
+      margin-left: 1rem;
+    }
+
+    .header__logoTitle {
+      border: 0;
+    }
+  }
+  .header__search {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    border-radius: 8px;
+    margin: 0 1rem;
+
+    .header__searchInput {
+      height: 1.2rem;
+      padding: 1.2rem;
+      border: 1px solid #fff;
+      width: 100%;
+      border-radius: 0 5px 5px 0;
+      font-family: "Vazir";
+    }
+    .header__searchInput:focus {
+      border: 1px solid #f6cdbc;
+      outline: none;
+      box-shadow: 0px 0px 20px 2px rgba(#f6cdbc, 0.7);
+    }
+
+    .header__searchIcon {
+      border: 2px solid #fff;
+      color: #fff;
+    }
+  }
+  .header__nav {
+    display: flex;
+    gap: 1rem;
+    .nav__item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      // margin: 0 1rem;
+
+      .nav__itemLineOne {
+        font-size: 0.9rem;
+      }
+
+      .nav__itemLineTwo {
+        font-size: 1.1rem;
+        font-weight: 800;
+      }
+    }
+    .nav__itemBasket {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      .nav__itemCount {
+        font-size: 1.1rem;
+      }
+    }
+  }
+}
