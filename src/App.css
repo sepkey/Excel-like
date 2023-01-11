@@ -1,0 +1,10 @@
+.appCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+.appWrapper {
+  width: 75%;
+  background-color: rgb(252, 252, 248);
+}

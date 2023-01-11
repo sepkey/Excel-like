@@ -1,42 +1,24 @@
-import createTheme from "@mui/material/styles/createTheme";
-
-export const theme = createTheme({
-  palette: {
-    colorWhite: {
-      main: "#fff",
-      dark: "#fafafa",
-    },
-    colorBlack: {
-      main: " #2b2b2b",
-    },
-    colorGray: {
-      main: "#a2a2a2",
-      dark: "#737373",
-      light: "#e7e7e7",
-    },
-    colorHeader: {
-      main: "#252f35",
-      light: "#2f4858",
-    },
-    colorGreen: {
-      light: "#29b7b7",
-      main: "#009b9b",
-      dark: "#017575",
-    },
-    colorSuccess: {
-      main: "#1dc6a7",
-      light: "#d7f1f1",
-    },
-    colorFailure: {
-      main: " #df3554",
-      light: "#ffbac1",
-    },
-    colorRed: {
-      main: "#d84b4b",
-    },
-    colorLogo: {
-      main: "#ffb82a",
-    },
+export const theme = {
+  colorScheme: "light",
+  colors: {
+    brandColor: [
+      "#217346",
+      "#e4ee01",
+      "#ff0946",
+      "#e43901",
+      "#99f543",
+      "#f5e111",
+      "#217346",
+      "#e43901",
+      "#217346",
+      "#e43901",
+    ],
   },
-  direction: "rtl",
-});
+  primaryColor: "brandColor",
+  shadows: {
+    md: "0px 1px 3px rgba(0, 0, 0, .25)",
+    xl: "0px 5px 3px rgba(0, 0, 0, .25)",
+  },
+  fontSizes: { md: 12 },
+  radius: { sm: 2 },
+};
