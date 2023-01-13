@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import { Button, Table } from "@mantine/core";
-import { Input } from "@mantine/core";
+import { Button, Table, Input } from "@mantine/core";
 import { TbListSearch, TbFileExport } from "react-icons/tb";
 import "./Excel.css";
 
@@ -11,12 +10,12 @@ function clone(o) {
 export default class Excel extends Component {
   constructor(props) {
     super();
-    const data = clone(props.initialData).map((record, indexAsId) => {
+    const data = clone(props.initialData).map(
+      (record, indexAsId) => record.concat(indexAsId)
       // record.push(indexAsId);
       // return record;
       // return record.concat([indexAsId]);
-      return record.concat(indexAsId);
-    });
+    );
     this.state = {
       data, //data which is polished
       sortby: null, //which column is clicked?num
@@ -26,18 +25,18 @@ export default class Excel extends Component {
     };
 
     this.preSearchData = null;
+
     this.sort = this.sort.bind(this);
     this.showEditor = this.showEditor.bind(this);
     this.save = this.save.bind(this);
-    this.toggleSearch = this.toggleSearch(this);
-    this.search = this.search(this);
+    this.toggleSearch = this.toggleSearch.bind(this);
+    this.search = this.search.bind(this);
   }
 
   sort(e) {
     const column = e.target.cellIndex;
     const data = clone(this.state.data);
     const descending = this.state.sortby === column && !this.state.descending;
-
     data.sort((a, b) => {
       if (a[column] === b[column]) {
         return 0;
@@ -50,7 +49,6 @@ export default class Excel extends Component {
         ? -1
         : 1;
     });
-
     this.setState({
       data,
       sortby: column,
@@ -79,20 +77,46 @@ export default class Excel extends Component {
     });
   }
 
-  toggleSearch() {}
+  toggleSearch() {
+    if (this.state.search) {
+      this.setState({
+        data: this.preSearchData,
+        search: false,
+      });
+      this.preSearchData = null;
+    } else {
+      this.preSearchData = this.state.data;
+      this.setState({
+        search: true,
+      });
+    }
+  }
 
-  search() {}
+  search(e) {
+    const needle = e.target.value.toLowerCase();
+    if (!needle) {
+      this.setState({ data: this.preSearchData });
+      return;
+    }
+    const idx = e.target.dataset.index;
+    const searchdata = this.preSearchData.filter((row) => {
+      return row[idx].toString().toLowerCase().indexOf(needle) > -1;
+    });
+    this.setState({ data: searchdata });
+  }
 
   render() {
-    const searchRow = this.state.search
-      ? null
-      : this.props.headers.map((_, index) => {
+    const searchRow = !this.state.search ? null : (
+      <tr onChange={this.search}>
+        {this.props.headers.map((_, index) => {
           return (
-            <td style={{ padding: "0.5rem" }}>
-              <Input type="text" />
+            <td style={{ padding: "0.5rem" }} key={index}>
+              <Input type="text" placeholder="search..." data-index={index} />
             </td>
           );
-        });
+        })}
+      </tr>
+    );
     return (
       <div style={{ padding: "2rem", border: "1px dashed #45e989" }}>
         <div style={{ marginBottom: "1rem", display: "flex", gap: "1rem" }}>
@@ -123,8 +147,8 @@ export default class Excel extends Component {
             {this.state.data.map((row, roxIndex) => {
               const recordId = row[row.length - 1];
               return (
-                <tr key={roxIndex} data-row={roxIndex}>
-                  {/* slice works but what if we have an extra column?shoud we change 1 to 2?it's not such an scalable approach to implement */}
+                <tr key={recordId} data-row={roxIndex}>
+                  {/* slice works */}
                   {row.slice(0, row.length - 1).map((item, colIndex) => {
                     const edit = this.state.edit;
                     if (
@@ -178,7 +202,7 @@ export default class Excel extends Component {
                   })} */}
                   {/* Encountered with an error which the book ignored it  */}
 
-                  {/* ///////////////wirh filter */}
+                  {/* ///////////////with filter */}
                   {/* {row
                     .filter((item) => item !== recordId)
                     .map((item, colIndex) => {

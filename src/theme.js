@@ -2,11 +2,11 @@ export const theme = {
   colorScheme: "light",
   colors: {
     brandColor: [
-      "#217346",
-      "#e4ee01",
-      "#ff0946",
+      "#378159",
+      "#4d8f6b",
+      "#7aab90",
       "#175131",
-      "#99f543",
+      "#d3e3da",
       "#f5e111",
       "#217346",
       "#175131",
