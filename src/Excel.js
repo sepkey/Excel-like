@@ -16,6 +16,7 @@ export default class Excel extends Component {
       // return record;
       // return record.concat([indexAsId]);
     );
+
     this.state = {
       data, //data which is polished
       sortby: null, //which column is clicked?num
@@ -25,12 +26,11 @@ export default class Excel extends Component {
     };
 
     this.preSearchData = null;
-
     this.sort = this.sort.bind(this);
     this.showEditor = this.showEditor.bind(this);
     this.save = this.save.bind(this);
     this.toggleSearch = this.toggleSearch.bind(this);
-    this.search = this.search.bind(this);
+    this.handleChange = this.handleChange.bind(this);
   }
 
   sort(e) {
@@ -49,6 +49,7 @@ export default class Excel extends Component {
         ? -1
         : 1;
     });
+
     this.setState({
       data,
       sortby: column,
@@ -59,8 +60,8 @@ export default class Excel extends Component {
   showEditor(e) {
     this.setState({
       edit: {
-        // row: parseInt(e.target.parentNode.dataset.row, 10),
-        row: +e.target.parentNode.dataset.row,
+        row: parseInt(e.target.parentNode.dataset.row, 10),
+        // row: +e.target.parentNode.dataset.row,
         column: e.target.cellIndex,
       },
     });
@@ -68,13 +69,23 @@ export default class Excel extends Component {
 
   save(e) {
     e.preventDefault();
-    const input = e.target.firstChild.firstChild;
-    const data = clone(this.state.data);
-    data[this.state.edit.row][this.state.edit.column] = input.value;
+    const input = e.target.firstChild;
+    const data = clone(this.state.data).map((row) => {
+      if (row[row.length - 1] === this.state.edit.row) {
+        row[this.state.edit.column] = input.value;
+      }
+      return row;
+    });
+
     this.setState({
       edit: null,
       data,
     });
+
+    if (this.preSearchData) {
+      this.preSearchData[this.state.edit.row][this.state.edit.column] =
+        input.value;
+    }
   }
 
   toggleSearch() {
@@ -92,22 +103,22 @@ export default class Excel extends Component {
     }
   }
 
-  search(e) {
+  handleChange(e) {
     const needle = e.target.value.toLowerCase();
     if (!needle) {
       this.setState({ data: this.preSearchData });
       return;
     }
     const idx = e.target.dataset.index;
-    const searchdata = this.preSearchData.filter((row) => {
-      return row[idx].toString().toLowerCase().indexOf(needle) > -1;
-    });
-    this.setState({ data: searchdata });
+    const searchData = this.preSearchData.filter(
+      (row) => row[idx].toString().toLowerCase().indexOf(needle) > -1
+    );
+    this.setState({ data: searchData });
   }
 
   render() {
     const searchRow = !this.state.search ? null : (
-      <tr onChange={this.search}>
+      <tr onChange={this.handleChange}>
         {this.props.headers.map((_, index) => {
           return (
             <td style={{ padding: "0.5rem" }} key={index}>
