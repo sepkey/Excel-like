@@ -16,12 +16,17 @@ function clone(o) {
 export default class Excel extends Component {
   constructor(props) {
     super();
+
     const data = clone(props.initialData).map(
       (record, indexAsId) => record.concat(indexAsId)
       // record.push(indexAsId);
       // return record;
       // return record.concat([indexAsId]);
     );
+
+    this.log = [clone(this.state)];
+    this.replay = this.replay.bind(this);
+    this.logSetState = this.logSetState.bind(this);
 
     this.state = {
       data, //data which is polished
@@ -37,6 +42,36 @@ export default class Excel extends Component {
     this.save = this.save.bind(this);
     this.toggleSearch = this.toggleSearch.bind(this);
     this.handleChange = this.handleChange.bind(this);
+  }
+
+  componentDidMount() {
+    document.addEventListener("keydown", (e) => {
+      if (e.altKey && e.shiftKey && e.keyCode === 82) {
+        // ALT+SHIFT+R(eplay)
+        this.replay();
+      }
+    });
+  }
+
+  replay() {
+    if (this.log.length === 1) {
+      console.warn("No state changes to replay yet");
+      return;
+    }
+    let idx = -1;
+    const interval = setInterval(() => {
+      if (++idx === this.log.length - 1) {
+        // the end
+        clearInterval(interval);
+      }
+      this.setState(this.log[idx]);
+    }, 1000);
+  }
+  logSetState(newState) {
+    // remember the old state in a clone
+    this.log.push(clone(newState));
+    // now set it
+    this.setState(newState);
   }
 
   sort(e) {
@@ -57,7 +92,7 @@ export default class Excel extends Component {
         : 1;
     });
 
-    this.setState({
+    this.logSetState({
       data,
       sortby: column,
       descending,
@@ -65,7 +100,7 @@ export default class Excel extends Component {
   }
 
   activateEditor(e) {
-    this.setState({
+    this.logSetState({
       edit: {
         // row: parseInt(e.target.parentNode.dataset.row, 10),
         row: +e.target.parentNode.dataset.row,
@@ -84,7 +119,7 @@ export default class Excel extends Component {
       return row;
     });
 
-    this.setState({
+    this.logSetState({
       edit: null,
       data,
     });
@@ -97,14 +132,14 @@ export default class Excel extends Component {
 
   toggleSearch() {
     if (this.state.search) {
-      this.setState({
+      this.logSetState({
         data: this.preSearchData,
         search: false,
       });
       this.preSearchData = null;
     } else {
       this.preSearchData = this.state.data;
-      this.setState({
+      this.logSetState({
         search: true,
       });
     }
@@ -113,14 +148,14 @@ export default class Excel extends Component {
   handleChange(e) {
     const needle = e.target.value.toLowerCase();
     if (!needle) {
-      this.setState({ data: this.preSearchData });
+      this.logSetState({ data: this.preSearchData });
       return;
     }
     const idx = e.target.dataset.index;
     const searchData = this.preSearchData.filter(
       (row) => row[idx].toString().toLowerCase().indexOf(needle) > -1
     );
-    this.setState({ data: searchData });
+    this.logSetState({ data: searchData });
   }
 
   render() {
@@ -156,7 +191,7 @@ export default class Excel extends Component {
                 return (
                   <th
                     key={index}
-                    onClick={() => this.setState({ once: false })}
+                    onClick={() => this.logSetState({ once: false })}
                   >
                     <div style={{ display: "flex", alignItems: "center" }}>
                       {title}
