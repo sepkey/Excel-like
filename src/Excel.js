@@ -1,7 +1,13 @@
 import React, { Component } from "react";
 import { Button, Table, Input } from "@mantine/core";
-import { TbListSearch, TbFileExport } from "react-icons/tb";
+import {
+  TbListSearch,
+  TbFileExport,
+  TbArrowNarrowDown,
+  TbArrowNarrowUp,
+} from "react-icons/tb";
 import "./Excel.css";
+import { ActionIcon } from "@mantine/core";
 
 function clone(o) {
   return JSON.parse(JSON.stringify(o));
@@ -27,16 +33,17 @@ export default class Excel extends Component {
 
     this.preSearchData = null;
     this.sort = this.sort.bind(this);
-    this.showEditor = this.showEditor.bind(this);
+    this.activateEditor = this.activateEditor.bind(this);
     this.save = this.save.bind(this);
     this.toggleSearch = this.toggleSearch.bind(this);
     this.handleChange = this.handleChange.bind(this);
   }
 
   sort(e) {
-    const column = e.target.cellIndex;
+    const column = e.target.closest("th").cellIndex;
     const data = clone(this.state.data);
     const descending = this.state.sortby === column && !this.state.descending;
+
     data.sort((a, b) => {
       if (a[column] === b[column]) {
         return 0;
@@ -57,11 +64,11 @@ export default class Excel extends Component {
     });
   }
 
-  showEditor(e) {
+  activateEditor(e) {
     this.setState({
       edit: {
-        row: parseInt(e.target.parentNode.dataset.row, 10),
-        // row: +e.target.parentNode.dataset.row,
+        // row: parseInt(e.target.parentNode.dataset.row, 10),
+        row: +e.target.parentNode.dataset.row,
         column: e.target.cellIndex,
       },
     });
@@ -69,7 +76,7 @@ export default class Excel extends Component {
 
   save(e) {
     e.preventDefault();
-    const input = e.target.firstChild;
+    const input = e.target.firstChild.firstChild;
     const data = clone(this.state.data).map((row) => {
       if (row[row.length - 1] === this.state.edit.row) {
         row[this.state.edit.column] = input.value;
@@ -122,7 +129,7 @@ export default class Excel extends Component {
         {this.props.headers.map((_, index) => {
           return (
             <td style={{ padding: "0.5rem" }} key={index}>
-              <Input type="text" placeholder="search..." data-index={index} />
+              <Input type="text" data-index={index} />
             </td>
           );
         })}
@@ -146,19 +153,33 @@ export default class Excel extends Component {
           <thead onClick={this.sort}>
             <tr>
               {this.props.headers.map((title, index) => {
-                if (this.state.sortby === index) {
-                  title += this.state.descending ? " \u2191" : " \u2193";
-                }
-                return <th key={index}>{title}</th>;
+                return (
+                  <th
+                    key={index}
+                    onClick={() => this.setState({ once: false })}
+                  >
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      {title}
+                      <ActionIcon variant="transparent">
+                        {this.state.descending &&
+                        this.state.sortby === index ? (
+                          <TbArrowNarrowDown size={16} />
+                        ) : (
+                          <TbArrowNarrowUp size={16} />
+                        )}
+                      </ActionIcon>
+                    </div>
+                  </th>
+                );
               })}
             </tr>
           </thead>
-          <tbody onDoubleClick={this.showEditor}>
+          <tbody onDoubleClick={this.activateEditor}>
             {searchRow}
-            {this.state.data.map((row, roxIndex) => {
+            {this.state.data.map((row, rowIndex) => {
               const recordId = row[row.length - 1];
               return (
-                <tr key={recordId} data-row={roxIndex}>
+                <tr key={recordId} data-row={recordId}>
                   {/* slice works */}
                   {row.slice(0, row.length - 1).map((item, colIndex) => {
                     const edit = this.state.edit;
