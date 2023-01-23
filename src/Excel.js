@@ -1,6 +1,13 @@
 import React, { Component } from "react";
-import { Box, Table } from "@mantine/core";
-import { Input } from "@mantine/core";
+import { Button, Table, Input } from "@mantine/core";
+import {
+  TbListSearch,
+  TbFileExport,
+  TbArrowNarrowDown,
+  TbArrowNarrowUp,
+} from "react-icons/tb";
+import "./Excel.css";
+import { ActionIcon } from "@mantine/core";
 
 function clone(o) {
   return JSON.parse(JSON.stringify(o));
@@ -9,19 +16,31 @@ function clone(o) {
 export default class Excel extends Component {
   constructor(props) {
     super();
+    const data = clone(props.initialData).map(
+      (record, indexAsId) => record.concat(indexAsId)
+      // record.push(indexAsId);
+      // return record;
+      // return record.concat([indexAsId]);
+    );
+
     this.state = {
-      data: props.initialData,
-      sortby: null,
+      data, //data which is polished
+      sortby: null, //which column is clicked?num
       descending: false,
-      edit: null,
+      edit: null, //object{row:0,column:0}
+      search: false, //on and off button
     };
+
+    this.preSearchData = null;
     this.sort = this.sort.bind(this);
-    this.showEditor = this.showEditor.bind(this);
+    this.activateEditor = this.activateEditor.bind(this);
     this.save = this.save.bind(this);
+    this.toggleSearch = this.toggleSearch.bind(this);
+    this.handleChange = this.handleChange.bind(this);
   }
 
   sort(e) {
-    const column = e.target.cellIndex;
+    const column = e.target.closest("th").cellIndex;
     const data = clone(this.state.data);
     const descending = this.state.sortby === column && !this.state.descending;
 
@@ -45,10 +64,11 @@ export default class Excel extends Component {
     });
   }
 
-  showEditor(e) {
+  activateEditor(e) {
     this.setState({
       edit: {
-        row: parseInt(e.target.parentNode.dataset.row, 10),
+        // row: parseInt(e.target.parentNode.dataset.row, 10),
+        row: +e.target.parentNode.dataset.row,
         column: e.target.cellIndex,
       },
     });
@@ -57,53 +77,192 @@ export default class Excel extends Component {
   save(e) {
     e.preventDefault();
     const input = e.target.firstChild.firstChild;
-    console.log(input);
-    const data = clone(this.state.data);
-    data[this.state.edit.row][this.state.edit.column] = input.value;
+    const data = clone(this.state.data).map((row) => {
+      if (row[row.length - 1] === this.state.edit.row) {
+        row[this.state.edit.column] = input.value;
+      }
+      return row;
+    });
+
     this.setState({
       edit: null,
       data,
     });
+
+    if (this.preSearchData) {
+      this.preSearchData[this.state.edit.row][this.state.edit.column] =
+        input.value;
+    }
+  }
+
+  toggleSearch() {
+    if (this.state.search) {
+      this.setState({
+        data: this.preSearchData,
+        search: false,
+      });
+      this.preSearchData = null;
+    } else {
+      this.preSearchData = this.state.data;
+      this.setState({
+        search: true,
+      });
+    }
+  }
+
+  handleChange(e) {
+    const needle = e.target.value.toLowerCase();
+    if (!needle) {
+      this.setState({ data: this.preSearchData });
+      return;
+    }
+    const idx = e.target.dataset.index;
+    const searchData = this.preSearchData.filter(
+      (row) => row[idx].toString().toLowerCase().indexOf(needle) > -1
+    );
+    this.setState({ data: searchData });
   }
 
   render() {
-    const edit = this.state.edit;
+    const searchRow = !this.state.search ? null : (
+      <tr onChange={this.handleChange}>
+        {this.props.headers.map((_, index) => {
+          return (
+            <td style={{ padding: "0.5rem" }} key={index}>
+              <Input type="text" data-index={index} />
+            </td>
+          );
+        })}
+      </tr>
+    );
     return (
-      <Box>
+      <div style={{ padding: "2rem", border: "1px dashed #45e989" }}>
+        <div style={{ marginBottom: "1rem", display: "flex", gap: "1rem" }}>
+          <Button onClick={this.toggleSearch}>
+            {this.state.search ? "Hide search" : "Show search"}
+            <TbListSearch className="btn-icon" />
+          </Button>
+          <Button>
+            Export excel <TbFileExport className="btn-icon" />
+          </Button>
+          <Button>
+            Export CSV <TbFileExport className="btn-icon" />
+          </Button>
+        </div>
         <Table withBorder>
           <thead onClick={this.sort}>
             <tr>
               {this.props.headers.map((title, index) => {
-                if (this.state.sortby === index) {
-                  title += this.state.descending ? " \u2191" : " \u2193";
-                }
-                return <th key={index}>{title}</th>;
+                return (
+                  <th
+                    key={index}
+                    onClick={() => this.setState({ once: false })}
+                  >
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      {title}
+                      <ActionIcon variant="transparent">
+                        {this.state.descending &&
+                        this.state.sortby === index ? (
+                          <TbArrowNarrowDown size={16} />
+                        ) : (
+                          <TbArrowNarrowUp size={16} />
+                        )}
+                      </ActionIcon>
+                    </div>
+                  </th>
+                );
               })}
             </tr>
           </thead>
-          <tbody onDoubleClick={this.showEditor}>
-            {this.state.data.map((row, roxIndex) => {
+          <tbody onDoubleClick={this.activateEditor}>
+            {searchRow}
+            {this.state.data.map((row, rowIndex) => {
+              const recordId = row[row.length - 1];
               return (
-                <tr key={roxIndex} data-row={roxIndex}>
-                  {row.map((item, colIndex) => {
-                    return edit &&
-                      roxIndex === edit.row &&
-                      colIndex === edit.column ? (
-                      <td key={colIndex}>
+                <tr key={recordId} data-row={recordId}>
+                  {/* slice works */}
+                  {row.slice(0, row.length - 1).map((item, colIndex) => {
+                    const edit = this.state.edit;
+                    if (
+                      edit &&
+                      recordId === edit.row &&
+                      colIndex === edit.column
+                    ) {
+                      item = (
                         <form onSubmit={this.save}>
                           <Input radius="xs" type="text" defaultValue={item} />
                         </form>
-                      </td>
-                    ) : (
-                      <td key={colIndex}>{item}</td>
-                    );
+                      );
+                    }
+                    return <td key={colIndex}>{item}</td>;
                   })}
+                  {/* //////////////////book implementation */}
+                  {/* {row.map((item, colIndex) => {
+                    const edit = this.state.edit;
+                    if (colIndex === this.state.headers.length) {
+                      return;
+                    } else {
+                      if (
+                        edit &&
+                        recordId === edit.row &&
+                        colIndex === edit.column
+                      ) {
+                        item = (
+                          <form onSubmit={this.save}>
+                            <Input
+                              radius="xs"
+                              type="text"
+                              defaultValue={item}
+                            />
+                          </form>
+                        );
+                      }
+                      return <td key={colIndex}>{item}</td>;
+                    }
+
+                    // return edit &&
+                    //   roxIndex === edit.row &&
+                    //   colIndex === edit.column ? (
+                    //   <td key={colIndex}>
+                    //     <form onSubmit={this.save}>
+                    //       <Input radius="xs" type="text" defaultValue={item} />
+                    //     </form>
+                    //   </td>
+                    // ) : (
+                    //   <td key={colIndex}>{item}</td>
+                    // );
+                  })} */}
+                  {/* Encountered with an error which the book ignored it  */}
+
+                  {/* ///////////////with filter */}
+                  {/* {row
+                    .filter((item) => item !== recordId)
+                    .map((item, colIndex) => {
+                      const edit = this.state.edit;
+                      if (
+                        edit &&
+                        recordId === edit.row &&
+                        colIndex === edit.column
+                      ) {
+                        item = (
+                          <form onSubmit={this.save}>
+                            <Input
+                              radius="xs"
+                              type="text"
+                              defaultValue={item}
+                            />
+                          </form>
+                        );
+                      }
+                      return <td key={colIndex}>{item}</td>;
+                    })} */}
+                  {/* The problem is when one of the other cell's content === recordId */}
                 </tr>
               );
             })}
           </tbody>
         </Table>
-      </Box>
+      </div>
     );
   }
 }

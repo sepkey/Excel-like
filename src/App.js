@@ -1,5 +1,6 @@
 import React from "react";
-import Excel from "./Excel";
+// import Excel from "./Excel";
+import Excel2 from "./Excel2";
 import "./App.css";
 import { MantineProvider } from "@mantine/core";
 import { theme } from "./Theme";
@@ -37,7 +38,8 @@ const App = () => {
       <MantineProvider theme={theme}>
         <div className="appCenter">
           <div className="appWrapper">
-            <Excel headers={headers} initialData={data} />
+            {/* <Excel headers={headers} initialData={data} /> */}
+            <Excel2 headers={headers} initialData={data} />
           </div>
         </div>
       </MantineProvider>
