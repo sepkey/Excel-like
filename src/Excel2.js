@@ -96,9 +96,17 @@ const Excel2 = ({ initialData, headers }) => {
   const save = (e) => {
     e.preventDefault();
     const input = e.target.firstChild.firstChild;
-    const newData = clone(data);
-    newData[edit.row][edit.col] = input.value;
+    const newData = clone(data).map((row) => {
+      if (row[row.length - 1] === edit.row) {
+        row[edit.col] = input.value;
+      }
+      return row;
+    });
     dispatch({ type: "SAVE", payload: { data: newData, edit: null } });
+
+    if (preSearchData) {
+      preSearchData[edit.row][edit.col] = input.value;
+    }
   };
 
   const toggleSearch = () => {
@@ -113,11 +121,21 @@ const Excel2 = ({ initialData, headers }) => {
   };
 
   const handleChange = (e) => {
-    console.log(preSearchData);
+    const term = e.target.value.toLowerCase();
+    if (!term) {
+      dispatch({ type: "FILL_DATA", payload: preSearchData });
+      return;
+    }
+
+    const index = e.target.dataset.index;
+    const filteredData = preSearchData.filter(
+      (row) => row[index].toLowerCase().indexOf(term) > -1
+    );
+    dispatch({ type: "FILL_DATA", payload: filteredData });
   };
 
   const searchRow = searchOn && (
-    <tr onClick={handleChange}>
+    <tr onChange={handleChange}>
       {headers.map((_, index) => {
         return (
           <td key={index}>
