@@ -24,10 +24,6 @@ export default class Excel extends Component {
       // return record.concat([indexAsId]);
     );
 
-    this.log = [clone(this.state)];
-    this.replay = this.replay.bind(this);
-    this.logSetState = this.logSetState.bind(this);
-
     this.state = {
       data, //data which is polished
       sortby: null, //which column is clicked?num
@@ -37,11 +33,17 @@ export default class Excel extends Component {
     };
 
     this.preSearchData = null;
+    this.log = [clone(this.state)];
+
     this.sort = this.sort.bind(this);
     this.activateEditor = this.activateEditor.bind(this);
     this.save = this.save.bind(this);
     this.toggleSearch = this.toggleSearch.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.replay = this.replay.bind(this);
+    this.logSetState = this.logSetState.bind(this);
+    this.downloadJSON = this.download.bind(this, "json");
+    this.downloadCSV = this.download.bind(this, "csv");
   }
 
   componentDidMount() {
@@ -51,27 +53,6 @@ export default class Excel extends Component {
         this.replay();
       }
     });
-  }
-
-  replay() {
-    if (this.log.length === 1) {
-      console.warn("No state changes to replay yet");
-      return;
-    }
-    let idx = -1;
-    const interval = setInterval(() => {
-      if (++idx === this.log.length - 1) {
-        // the end
-        clearInterval(interval);
-      }
-      this.setState(this.log[idx]);
-    }, 1000);
-  }
-  logSetState(newState) {
-    // remember the old state in a clone
-    this.log.push(clone(newState));
-    // now set it
-    this.setState(newState);
   }
 
   sort(e) {
@@ -158,6 +139,51 @@ export default class Excel extends Component {
     this.logSetState({ data: searchData });
   }
 
+  logSetState(newState) {
+    // remember the old state in a clone
+    this.log.push(clone(newState));
+    // now set it
+    this.setState(newState);
+  }
+
+  replay() {
+    if (this.log.length === 1) {
+      console.warn("No state changes to replay yet");
+      return;
+    }
+    let idx = -1;
+    const interval = setInterval(() => {
+      if (++idx === this.log.length - 1) {
+        // the end
+        clearInterval(interval);
+      }
+      this.setState(this.log[idx]);
+    }, 1000);
+  }
+
+  download(format, event) {
+    const data = clone(this.state.data).map((row) => {
+      row.pop();
+      return row;
+    });
+    const contents =
+      format === "json"
+        ? JSON.stringify(data, null, " ")
+        : data.reduce((result, row) => {
+            return (
+              result +
+              row.reduce((rowAcc, cellcontent, idx) => {
+                const delimiter = idx < row.length - 1 ? "," : "";
+                return `${rowAcc}"${cellcontent}"${delimiter}`;
+              }, "") +
+              "\n"
+            );
+          }, "");
+    const URL = window.URL || window.webkitURL;
+    const blob = new Blob([contents], { type: "text/" + format });
+    event.target.href = URL.createObjectURL(blob);
+    event.target.download = "data." + format;
+  }
   render() {
     const searchRow = !this.state.search ? null : (
       <tr onChange={this.handleChange}>
@@ -177,12 +203,18 @@ export default class Excel extends Component {
             {this.state.search ? "Hide search" : "Show search"}
             <TbListSearch className="btn-icon" />
           </Button>
-          <Button>
+          {/* <Button>
             Export excel <TbFileExport className="btn-icon" />
           </Button>
           <Button>
             Export CSV <TbFileExport className="btn-icon" />
-          </Button>
+          </Button> */}
+          <a href="data.json" className="btn-link" onClick={this.downloadJSON}>
+            Export JSON <TbFileExport className="btn-icon" />
+          </a>
+          <a href="data.csv" className="btn-link" onClick={this.downloadCSV}>
+            Export CSV
+          </a>
         </div>
         <Table withBorder>
           <thead onClick={this.sort}>
